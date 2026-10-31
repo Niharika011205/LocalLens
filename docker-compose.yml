@@ -1,0 +1,74 @@
+# Local infrastructure for LocalLens.
+#   docker compose up -d                 -> MongoDB, Redis (run the API and web app with `npm run dev`)
+#   docker compose --profile app up -d   -> also builds and runs the production image on http://localhost:4100
+# Ports are bound to 127.0.0.1 only and shifted (27018, 6380) to avoid clashing with services already on this machine.
+name: locallens
+
+services:
+  mongo:
+    image: mongo:8.0
+    # Single-node replica set: needed for multi-document transactions (Phase 3) and change streams.
+    command: ['--replSet', 'rs0', '--bind_ip_all']
+    ports: ['127.0.0.1:27018:27017']
+    volumes: ['mongo-data:/data/db']
+    healthcheck:
+      # Initiates the replica set on first start, then reports healthy once it is up.
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - "try { rs.status().ok } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] }).ok }"
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
+
+  redis:
+    image: redis:7.4-alpine
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    ports: ['127.0.0.1:6380:6379']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    profiles: ['app']
+    build: .
+    depends_on:
+      mongo: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      ai: { condition: service_started }
+    ports: ['127.0.0.1:4100:4100']
+    environment:
+      # Production image with local settings: plain http, so secure cookies are off (see .env.example for production).
+      NODE_ENV: development
+      PORT: '4100'
+      APP_ORIGIN: http://localhost:4100
+      MONGODB_URI: mongodb://mongo:27017/locallens?replicaSet=rs0
+      RATE_LIMIT_STORE: redis
+      REDIS_URL: redis://redis:6379
+      COOKIE_SECURE: 'false'
+      STATIC_DIR: /app/web
+      # AI checks and the assistant. Set AI_SERVICE_TOKEN (32+ random characters) in .env; both services refuse to start without it.
+      AI_SERVICE_URL: http://ai:4200
+      AI_SERVICE_TOKEN: ${AI_SERVICE_TOKEN:-}
+
+  ai:
+    profiles: ['app']
+    build: { context: ., dockerfile: services/ai/Dockerfile }
+    # Not published on the host: only the API talks to it.
+    expose: ['4200']
+    environment:
+      AI_SERVICE_TOKEN: ${AI_SERVICE_TOKEN:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      # Ollama running on the host machine (Docker Desktop name for the host).
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    extra_hosts: ['host.docker.internal:host-gateway']
+
+volumes:
+  mongo-data:

@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/coverage
+.git
+.github
+.env
+.env.*
+docs
+data
+*.log
+.data
+**/.venv
+**/__pycache__
+**/.pytest_cache
+services/ai/.env

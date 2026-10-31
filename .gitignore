@@ -1,0 +1,24 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+# local database for `npm run dev:standalone`
+.data/
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.vscode/*
+!.vscode/extensions.json
+# local data files (LGD downloads are recorded in data/lgd/MANIFEST.md, not committed)
+data/**/*.csv
+data/**/*.xls*
+# OpenStreetMap answers cached by `npm run locations:import-osm`
+data/osm/
+# private notes (e.g. temporary test passwords)
+*.local.md
+.public-url

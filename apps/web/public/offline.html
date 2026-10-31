@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="te">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e11d48" />
+    <title>LocalLens — offline</title>
+    <style>
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f5f5f4; color: #1c1917; font-family: system-ui, sans-serif; text-align: center; }
+      .logo { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 16px; background: #e11d48; color: #fff; font: 900 40px/64px Arial, sans-serif; }
+      button { margin-top: 20px; min-height: 44px; padding: 0 22px; border: 0; border-radius: 999px; background: #e11d48; color: #fff; font-weight: 700; font-size: 16px; }
+      p { max-width: 22rem; margin: 6px auto; line-height: 1.6; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="logo" aria-hidden="true">L</div>
+      <h1>ఇంటర్నెట్ లేదు · You are offline</h1>
+      <p>ఇంటర్నెట్ వచ్చాక మళ్లీ ప్రయత్నించండి.</p>
+      <p>Check your connection and try again.</p>
+      <button type="button" onclick="location.reload()">మళ్లీ ప్రయత్నించండి · Try again</button>
+    </main>
+  </body>
+</html>

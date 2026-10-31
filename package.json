@@ -1,0 +1,36 @@
+{
+  "name": "locallens",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:standalone": "concurrently -k -n api,web -c cyan,magenta \"npm:dev:api:standalone\" \"npm:dev:web\"",
+    "dev:api": "npm run dev --workspace @locallens/api",
+    "dev:api:standalone": "npm run dev:standalone --workspace @locallens/api",
+    "dev:web": "npm run dev --workspace @locallens/web",
+    "build": "npm run build --workspace @locallens/web && npm run build --workspace @locallens/api",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "admin:promote": "npm run admin:promote --workspace @locallens/api --",
+    "seed:dev": "npm run seed:dev --workspace @locallens/api",
+    "locations:import": "npm run locations:import --workspace @locallens/api --",
+    "locations:import-osm": "npm run locations:import-osm --workspace @locallens/api --"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "concurrently": "^9.2.5",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.5.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.1"
+  }
+}

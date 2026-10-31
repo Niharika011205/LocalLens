@@ -1,0 +1,41 @@
+# Render Blueprint: the app (API + web, one Docker image) and a small Redis for rate limits.
+# The database is MongoDB Atlas (free M0): paste its connection string as MONGODB_URI when Render asks.
+# Steps: docs/10-deploy-render.md
+services:
+  - type: web
+    name: locallens
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: RATE_LIMIT_STORE
+        value: redis
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: locallens-redis
+          property: connectionString
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: MFA_ENFORCE
+        value: "true"
+      - key: MFA_ENCRYPTION_KEY
+        generateValue: true
+      - key: REPORTER_SELF_SIGNUP
+        value: "true"
+      - key: REPORTS_TO_REMOVE
+        value: "10"
+      # Optional later: CLOUDINARY_URL (photos), AI_SERVICE_URL + AI_SERVICE_TOKEN (Ask AI).
+  - type: keyvalue
+    name: locallens-redis
+    plan: free
+    region: singapore
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: [] # reachable only from our own Render services

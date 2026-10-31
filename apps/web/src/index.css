@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Self-hosted Noto Sans Telugu renders Telugu conjuncts correctly; it also covers Latin text. */
+  --font-sans: 'Noto Sans Telugu', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Hide scrollbars on horizontal chip rows (they still scroll by touch, wheel and keyboard). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-stone-100 text-stone-900 antialiased;
+  /* Telugu glyphs are taller than Latin ones; extra line height avoids clipped vowel signs. */
+  line-height: 1.65;
+}
