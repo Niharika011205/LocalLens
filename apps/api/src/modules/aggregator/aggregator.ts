@@ -6,7 +6,7 @@ import type { Logger } from 'pino';
 import { currentUser, requireRole } from '../../middleware/auth';
 import { audit } from '../audit/audit';
 import { CategoryModel } from '../catalog/catalog';
-import { LocationModel } from '../geo/location.model';
+import { buildSearchKeys, LocationModel } from '../geo/location.model';
 import { enqueue, registerJobHandler, registerSweeper } from '../jobs/jobs';
 import { ContentReportModel } from '../moderation/reports';
 import { ArticleModel } from '../publishing/article.model';
@@ -195,7 +195,22 @@ const TOPIC_RULES: [string, RegExp][] = [
   ['civic_issues', /road|water supply|drainage|electricity|power cut|municipal|రోడ్డు|తాగునీ|విద్యుత్|మున్సిపల్/i],
 ];
 
+/**
+ * Imported news needs at least a state to hang on. A fresh database (e.g. a new deployment before any places are
+ * imported) gets Andhra Pradesh, the pilot state, so news shows from the first import.
+ */
+async function ensureHomeState(): Promise<void> {
+  if (await LocationModel.exists({ level: 'state' })) return;
+  const name = { en: 'Andhra Pradesh', te: 'ఆంధ్రప్రదేశ్' };
+  await LocationModel.updateOne(
+    { parentId: null, nameKey: 'andhra pradesh' },
+    { $setOnInsert: { level: 'state', ancestorIds: [], name, aliases: [], searchKeys: buildSearchKeys(name, []), lgdCode: null, source: { dataset: 'manual', createdBy: null, version: null } } },
+    { upsert: true },
+  );
+}
+
 async function catalog() {
+  await ensureHomeState();
   const [categories, places] = await Promise.all([
     CategoryModel.find({}, { slug: 1 }).lean(),
     LocationModel.find({ level: { $in: ['state', 'district', 'mandal'] } }, { name: 1, aliases: 1, level: 1, ancestorIds: 1 }).lean(),

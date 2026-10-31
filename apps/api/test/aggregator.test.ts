@@ -282,3 +282,20 @@ describe('Cloudinary photos', () => {
     expect(await ArticleModel.countDocuments({ trustLabel: 'reporter_post' })).toBe(0);
   });
 });
+
+describe('a brand-new database', () => {
+  it('shows imported news even before any places are added (Andhra Pradesh is created for it)', async () => {
+    const { ensureCategories } = await import('../src/modules/catalog/catalog'); // done at app start
+    await ensureCategories();
+    const { LocationModel } = await import('../src/modules/geo/location.model');
+    expect(await LocationModel.countDocuments()).toBe(0);
+
+    await importAll({ fetcher: fakeFetch({ 'https://news.example/feed': { status: 200, body: RSS } }), keepDays: 7, sources: [SOURCE] });
+    const state = await LocationModel.findOne({ level: 'state' }).lean();
+    expect(state).toMatchObject({ name: { en: 'Andhra Pradesh', te: 'ఆంధ్రప్రదేశ్' } });
+    expect(await ArticleModel.countDocuments({ sourceType: 'external', status: 'published' })).toBeGreaterThan(0);
+    expect(await LocationModel.countDocuments({ level: 'state' })).toBe(1); // only once, however many imports run
+    await importAll({ fetcher: fakeFetch({}), keepDays: 7, sources: [SOURCE] });
+    expect(await LocationModel.countDocuments({ level: 'state' })).toBe(1);
+  });
+});
