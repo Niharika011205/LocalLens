@@ -1,5 +1,5 @@
-# LocalLens AI
-# LIVE LINK: https://locallens-s10x.onrender.com
+### LocalLens AI
+### LIVE LINK: https://locallens-s10x.onrender.com
 
 Hyperlocal news and community information for Telugu-speaking communities in Andhra Pradesh: a short-news card feed
 (one story per screen), reporters posting news with a photo in seconds, readers reporting wrong news (enough reports
